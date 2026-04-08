@@ -1,3 +1,4 @@
+//BY CENTROID METHOD
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -40,4 +41,156 @@ plt.scatter(centroids[:, 0], centroids[:, 1], marker='x')
 plt.title("K-Means (Centroid Method)")
 plt.xlabel("X")
 plt.ylabel("Y")
+plt.show()
+
+
+
+//BY MEAN METHOD
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = pd.read_csv("new.csv")
+points = data.values.tolist()
+
+centroids = [points[0], points[1]]
+
+def euclidean(p1, p2):
+    return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2) ** 0.5
+
+for _ in range(10):
+    cluster1 = []
+    cluster2 = []
+
+    # Assign clusters
+    for p in points:
+        d1 = euclidean(p, centroids[0])
+        d2 = euclidean(p, centroids[1])
+
+        if d1 < d2:
+            cluster1.append(p)
+        else:
+            cluster2.append(p)
+
+    # Mean calculation
+    def mean(cluster):
+        x = sum(p[0] for p in cluster) / len(cluster)
+        y = sum(p[1] for p in cluster) / len(cluster)
+        return [x, y]
+
+    new_c1 = mean(cluster1)
+    new_c2 = mean(cluster2)
+
+    if centroids[0] == new_c1 and centroids[1] == new_c2:
+        break
+
+    centroids = [new_c1, new_c2]
+
+# Plot clusters
+for p in cluster1:
+    plt.scatter(p[0], p[1])
+
+for p in cluster2:
+    plt.scatter(p[0], p[1])
+
+# Plot centroids
+for c in centroids:
+    plt.scatter(c[0], c[1], marker='x')
+
+plt.title("K-Means (Mean Method)")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.show()
+
+
+
+//COMPARING EM ALGORITHM WITH K-MEANS
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+# -------------------------
+# Load Dataset
+# -------------------------
+data = pd.read_csv("d.csv")
+
+# -------------------------
+# Standardize Data
+# -------------------------
+scaler = StandardScaler()
+X = scaler.fit_transform(data)
+
+k = 3
+
+# -------------------------
+# k-Means
+# -------------------------
+kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+data["KMeans_Cluster"] = kmeans.fit_predict(X)
+
+# -------------------------
+# EM / GMM
+# -------------------------
+gmm = GaussianMixture(n_components=k, random_state=42)
+data["EM_Cluster"] = gmm.fit_predict(X)
+
+# -------------------------
+# Scores
+# -------------------------
+k_score = silhouette_score(X, data["KMeans_Cluster"])
+e_score = silhouette_score(X, data["EM_Cluster"])
+
+# -------------------------
+# Output
+# -------------------------
+print("\nFinal Clustered Dataset:\n")
+print(data.to_string(index=False))
+
+print("\nClustering Quality:")
+print("k-Means Score =", round(k_score, 3))
+print("EM Score      =", round(e_score, 3))
+
+# -------------------------
+# Side-by-side Graphs
+# -------------------------
+plt.figure(figsize=(12,5))
+
+# k-Means graph
+plt.subplot(1,2,1)
+
+c0 = data[data["KMeans_Cluster"] == 0]
+c1 = data[data["KMeans_Cluster"] == 1]
+c2 = data[data["KMeans_Cluster"] == 2]
+
+plt.scatter(c0["Income"], c0["Monthly_Spending"], marker='o', s=100, label='Cluster 0')
+plt.scatter(c1["Income"], c1["Monthly_Spending"], marker='s', s=100, label='Cluster 1')
+plt.scatter(c2["Income"], c2["Monthly_Spending"], marker='^', s=100, label='Cluster 2')
+
+plt.xlabel("Income")
+plt.ylabel("Monthly Spending")
+plt.title("k-Means Clustering")
+plt.legend()
+
+# EM graph
+plt.subplot(1,2,2)
+
+e0 = data[data["EM_Cluster"] == 0]
+e1 = data[data["EM_Cluster"] == 1]
+e2 = data[data["EM_Cluster"] == 2]
+
+plt.scatter(e0["Income"], e0["Monthly_Spending"], marker='o', s=100, label='Cluster 0')
+plt.scatter(e1["Income"], e1["Monthly_Spending"], marker='s', s=100, label='Cluster 1')
+plt.scatter(e2["Income"], e2["Monthly_Spending"], marker='^', s=100, label='Cluster 2')
+
+plt.xlabel("Income")
+plt.ylabel("Monthly Spending")
+plt.title("EM Clustering")
+plt.legend()
+
+plt.tight_layout()
 plt.show()
