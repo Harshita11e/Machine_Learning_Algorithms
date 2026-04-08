@@ -1,0 +1,43 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = pd.read_csv("new.csv")
+points = data.values
+
+k = 2
+centroids = points[:k]
+
+def distance(a, b):
+    return np.sqrt(np.sum((a - b) ** 2))
+
+for _ in range(10):
+    clusters = [[] for _ in range(k)]
+
+    # Assign points
+    for point in points:
+        distances = [distance(point, c) for c in centroids]
+        idx = np.argmin(distances)
+        clusters[idx].append(point)
+
+    # Update centroids
+    new_centroids = np.array([np.mean(cluster, axis=0) for cluster in clusters])
+
+    if np.all(centroids == new_centroids):
+        break
+
+    centroids = new_centroids
+
+# Convert clusters for plotting
+for i, cluster in enumerate(clusters):
+    cluster = np.array(cluster)
+    plt.scatter(cluster[:, 0], cluster[:, 1])
+
+# Plot centroids
+plt.scatter(centroids[:, 0], centroids[:, 1], marker='x')
+
+plt.title("K-Means (Centroid Method)")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.show()
