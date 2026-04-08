@@ -1,0 +1,73 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import networkx as nx
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.inference import VariableElimination
+
+# -------------------------
+# Load Dataset
+# -------------------------
+data = pd.read_csv("heart.csv")
+
+print("Heart Disease Dataset:\n")
+print(data.to_string(index=False))
+
+# -------------------------
+# Create Bayesian Network
+# -------------------------
+model = DiscreteBayesianNetwork([
+    ('Age', 'Heart_Disease'),
+    ('Gender', 'Heart_Disease'),
+    ('Chest_Pain_Type', 'Heart_Disease'),
+    ('Resting_BP', 'Heart_Disease'),
+    ('Cholesterol', 'Heart_Disease'),
+    ('Fasting_Blood_Sugar', 'Heart_Disease'),
+    ('ECG_Result', 'Heart_Disease'),
+    ('Max_Heart_Rate', 'Heart_Disease'),
+    ('Exercise_Angina', 'Heart_Disease'),
+    ('ST_Depression', 'Heart_Disease'),
+    ('Slope', 'Heart_Disease'),
+    ('Vessels', 'Heart_Disease'),
+    ('Thalassemia', 'Heart_Disease')
+])
+
+# Train model
+model.fit(data, estimator=MaximumLikelihoodEstimator)
+
+print("\nBayesian Network created successfully")
+
+# -------------------------
+# Graph Plot
+# -------------------------
+G = nx.DiGraph(model.edges())
+
+plt.figure(figsize=(12,6))
+nx.draw(
+    G,
+    with_labels=True,
+    node_size=2500,
+    font_size=8,
+    arrows=True
+)
+
+plt.title("Bayesian Network for Heart Disease Diagnosis")
+plt.show()
+
+# -------------------------
+# Diagnosis
+# -------------------------
+infer = VariableElimination(model)
+
+result = infer.query(
+    variables=['Heart_Disease'],
+    evidence={
+        'Gender': 'Male',
+        'Chest_Pain_Type': 'Asymptomatic',
+        'Exercise_Angina': 'Yes',
+        'Thalassemia': 'Reversible Defect'
+    }
+)
+
+print("\nDiagnosis Probability:\n")
+print(result)
